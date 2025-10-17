@@ -11,11 +11,11 @@
 ## 1) High-level Architecture (Mermaid)
 
 ```mermaid
-%% System Architecture - Refined
+%% System Architecture - Refined (GitHub-compatible)
 flowchart TB
   subgraph CLIENT[Client Layer]
-    A1[Next.js Web App\n(SSR + SPA)\nReact + TypeScript]
-    A2[Mobile App\n(React Native)]
+    A1[Next.js Web App (SSR + SPA)<br/>React + TypeScript]
+    A2[Mobile App<br/>React Native]
     A3[Electron Desktop]
   end
 
@@ -26,17 +26,17 @@ flowchart TB
   end
 
   subgraph GATEWAY[Gateway Layer]
-    C1[API Gateway - NGINX/Kong]\n
-    C2[WebSocket Gateway - Socket.io Cluster]\n
+    C1[API Gateway - NGINX/Kong]
+    C2[WebSocket Gateway - Socket.io Cluster]
   end
 
   subgraph SERVICES[Service Layer - Node.js / TypeScript]
-    D1[Auth Service\nJWT, Sessions, 2FA, KYC]:::svc
-    D2[Game Service\nPlinko Engine, Deterministic Simulation]:::svc
-    D3[Wallet Service\nBalance mgmt, Ledgers, Fiat/On-chain]:::svc
-    D4[RNG Service\nSeed mgmt, HMAC + VRF verification]:::svc
-    D5[Blockchain Service\nContract ops, TX watch, Chainlink VRF client]:::svc
-    D6[Notification Service\nEmail/SMS/Push/Webhook]:::svc
+    D1[Auth Service<br/>JWT, Sessions, 2FA, KYC]
+    D2[Game Service<br/>Plinko Engine, Deterministic Simulation]
+    D3[Wallet Service<br/>Balance mgmt, Ledgers, Fiat/On-chain]
+    D4[RNG Service<br/>Seed mgmt, HMAC + VRF verification]
+    D5[Blockchain Service<br/>Contract ops, TX watch, Chainlink VRF client]
+    D6[Notification Service<br/>Email/SMS/Push/Webhook]
   end
 
   subgraph MQ[Message Bus & Workers]
@@ -52,7 +52,8 @@ flowchart TB
   end
 
   subgraph CHAIN[Blockchain Layer]
-    G1[Polygon / Arbitrum / Base]\n    G2[PlatformToken (ERC-20)]
+    G1[Polygon / Arbitrum / Base]
+    G2[PlatformToken (ERC-20)]
     G3[Game Contract (Escrow + Verify)]
     G4[Chainlink VRF]
   end
@@ -114,37 +115,6 @@ flowchart TB
   style D3 fill:#8b5cf6,stroke:#333,stroke-width:1px
   style D4 fill:#f97316,stroke:#333,stroke-width:1px
   style D5 fill:#f97316,stroke:#333,stroke-width:1px
-```
-
----
-
-## 2) Bet Flow Sequence (Mermaid Sequence)
-
-```mermaid
-sequenceDiagram
-  participant Client
-  participant WS as WebSocket Gateway
-  participant Game as Game Service
-  participant RNG as RNG Service
-  participant Wallet as Wallet Service
-  participant MQ as Message Queue
-  participant Worker as Settlement Worker
-  participant DB as Postgres
-
-  Client->>WS: placeBet(betId, userId, stake, seedHash)
-  WS->>Game: validateBet(betId, userId, stake, seedHash)
-  Game->>Wallet: reserveStake(userId, stake)
-  Wallet-->>Game: reserved(success)
-  Game->>RNG: requestOutcome(betId, serverSeedId, clientSeedHash)
-  RNG-->>Game: signedSeed + proof
-  Game->>WS: betAccepted(betId)
-  Game->>MQ: publish(betPlacedEvent)
-  MQ->>Worker: settle(betId)
-  Worker->>Game: computeOutcome(betId, signedSeed)
-  Game->>Wallet: payoutOrRelease(userId, amount)
-  Wallet-->>DB: ledgerUpdate
-  DB-->>Client: finalOutcome(result, payout)
-  Note over Client,Game: Client can independently verify via on-chain hashes/VRF
 ```
 
 ---
