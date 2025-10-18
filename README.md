@@ -11,10 +11,12 @@
 ## 1) High-level Architecture (Mermaid)
 
 ```mermaid
-%% System Architecture - Refined (GitHub-compatible)
+%% System Architecture - Refined (GitHub-safe)
 flowchart TB
   subgraph CLIENT[Client Layer]
-    A1[Next.js Web App <br/>React + TypeScript]
+    A1[Next.js Web App (SSR + SPA)<br/>React + TypeScript]
+    A2[Mobile App<br/>React Native]
+    A3[Electron Desktop]
   end
 
   subgraph EDGE[Edge Layer - Cloudflare]
@@ -51,7 +53,7 @@ flowchart TB
 
   subgraph CHAIN[Blockchain Layer]
     G1[Polygon / Arbitrum / Base]
-    G2[PlatformToken (ERC20)]
+    G2[Platform Token (ERC-20)]
     G3[Game Contract (Escrow + Verify)]
     G4[Chainlink VRF]
   end
@@ -62,6 +64,8 @@ flowchart TB
 
   %% Client -> Edge
   A1 --> B1
+  A2 --> B1
+  A3 --> B1
   B1 --> B2
   B2 --> B3
 
@@ -111,7 +115,6 @@ flowchart TB
   style D3 fill:#8b5cf6,stroke:#333,stroke-width:1px
   style D4 fill:#f97316,stroke:#333,stroke-width:1px
   style D5 fill:#f97316,stroke:#333,stroke-width:1px
-
 ```
 
 ---
