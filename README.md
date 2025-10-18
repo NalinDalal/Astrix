@@ -14,9 +14,7 @@
 %% System Architecture - Refined (GitHub-compatible)
 flowchart TB
   subgraph CLIENT[Client Layer]
-    A1[Next.js Web App (SSR + SPA)<br/>React + TypeScript]
-    A2[Mobile App<br/>React Native]
-    A3[Electron Desktop]
+    A1[Next.js Web App <br/>React + TypeScript]
   end
 
   subgraph EDGE[Edge Layer - Cloudflare]
@@ -64,8 +62,6 @@ flowchart TB
 
   %% Client -> Edge
   A1 --> B1
-  A2 --> B1
-  A3 --> B1
   B1 --> B2
   B2 --> B3
 
