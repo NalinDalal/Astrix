@@ -13,88 +13,91 @@
 ```mermaid
 %% System Architecture - Refined (GitHub-safe)
 flowchart TB
-  subgraph CLIENT[Client Layer]
-    A1[Next.js Web App <br/>React + TypeScript]
-    A2[Mobile App<br/>React Native]
-    A3[Electron Desktop]
+  %% Client layer
+  subgraph CLIENT ["Client Layer"]
+    A1["Next.js Web App\nReact + TypeScript"]
+    A2["Mobile App\nReact Native"]
+    A3["Electron Desktop"]
   end
 
-  subgraph EDGE[Edge Layer - Cloudflare]
-    B1[CDN - Static Assets]
-    B2[WAF - DDoS / Bot Mitigation]
-    B3[Rate Limit - Redis-backed]
+  %% Edge / CDN / WAF
+  subgraph EDGE ["Edge Layer - Cloudflare"]
+    B1["CDN - Static Assets"]
+    B2["WAF - DDoS / Bot Mitigation"]
+    B3["Rate Limit - Redis-backed"]
   end
 
-  subgraph GATEWAY[Gateway Layer]
-    C1[API Gateway - NGINX/Kong]
-    C2[WebSocket Gateway - Socket.io Cluster]
+  %% Gateway
+  subgraph GATEWAY ["Gateway Layer"]
+    C1["API Gateway - NGINX/Kong"]
+    C2["WebSocket Gateway - Socket.io Cluster"]
   end
 
-  subgraph SERVICES[Service Layer - Node.js / TypeScript]
-    D1[Auth Service<br/>JWT, Sessions, 2FA, KYC]
-    D2[Game Service<br/>Plinko Engine, Deterministic Simulation]
-    D3[Wallet Service<br/>Balance mgmt, Ledgers, Fiat/On-chain]
-    D4[RNG Service<br/>Seed mgmt, HMAC + VRF verification]
-    D5[Blockchain Service<br/>Contract ops, TX watch, Chainlink VRF client]
-    D6[Notification Service<br/>Email/SMS/Push/Webhook]
+  %% Services
+  subgraph SERVICES ["Service Layer - Node.js / TypeScript"]
+    D1["Auth Service\nJWT, Sessions, 2FA, KYC"]
+    D2["Game Service\nPlinko Engine, Deterministic Simulation"]
+    D3["Wallet Service\nBalance mgmt, Ledgers, Fiat/On-chain"]
+    D4["RNG Service\nSeed mgmt, HMAC + VRF verification"]
+    D5["Blockchain Service\nContract ops, TX watch, Chainlink VRF client"]
+    D6["Notification Service\nEmail/SMS/Push/Webhook"]
   end
 
-  subgraph MQ[Message Bus & Workers]
-    E1[Kafka / Redis Streams]
-    E2[Workers: Analytics, Settlements, Withdraws, KYC jobs]
+  %% Message bus / workers
+  subgraph MQ ["Message Bus & Workers"]
+    E1["Kafka / Redis Streams"]
+    E2["Workers: Analytics, Settlements, Withdraws, KYC jobs"]
   end
 
-  subgraph DATA[Data Layer]
+  %% Data layer
+  subgraph DATA ["Data Layer"]
     F1[(Postgres - Primary DB)]
     F2[(Redis Cluster - Cache & Sessions)]
     F3[(ClickHouse - Analytics)]
     F4[(S3 - KYC, Logs)]
   end
 
-  subgraph CHAIN[Blockchain Layer]
-    G1[Polygon / Arbitrum / Base]
-    G2[Platform Token (ERC-20)]
-    G3[Game Contract (Escrow + Verify)]
-    G4[Chainlink VRF]
+  %% Blockchain
+  subgraph CHAIN ["Blockchain Layer"]
+    G1["Polygon / Arbitrum / Base"]
+    G2["Platform Token (ERC-20)"]
+    G3["Game Contract (Escrow + Verify)"]
+    G4["Chainlink VRF"]
   end
 
-  subgraph OBS[Monitoring]
-    H1[Datadog / CloudWatch / Sentry]
+  %% Observability
+  subgraph OBS ["Monitoring"]
+    H1["Datadog / CloudWatch / Sentry"]
   end
 
-  %% Client -> Edge
+  %% Connections
   A1 --> B1
   A2 --> B1
   A3 --> B1
   B1 --> B2
   B2 --> B3
 
-  %% Edge -> Gateway
   B3 --> C1
   B3 --> C2
 
-  %% Gateway -> Services
   C1 --> D1
   C1 --> D3
   C1 --> D5
   C2 --> D2
   C2 --> D6
 
-  %% Service interactions
   D2 --> D4
   D2 --> D3
   D3 --> D5
   D5 --> G1
   D4 --> G4
 
-  %% Services -> MQ -> Workers
   D2 --> E1
   D3 --> E1
   D5 --> E1
   E1 --> E2
   E2 --> F3
 
-  %% Services -> Data
   D1 --> F1
   D2 --> F1
   D3 --> F1
@@ -104,17 +107,16 @@ flowchart TB
   D2 --> F3
   D1 --> F4
 
-  %% Monitoring
   D1 -.-> H1
   D2 -.-> H1
   D3 -.-> H1
   F1 -.-> H1
 
-  style D1 fill:#8b5cf6,stroke:#333,stroke-width:1px
-  style D2 fill:#8b5cf6,stroke:#333,stroke-width:1px
-  style D3 fill:#8b5cf6,stroke:#333,stroke-width:1px
-  style D4 fill:#f97316,stroke:#333,stroke-width:1px
-  style D5 fill:#f97316,stroke:#333,stroke-width:1px
+  %% Styling (GitHub/VScode-friendly)
+  classDef service fill:#8b5cf6,stroke:#333,stroke-width:1px;
+  classDef infra fill:#f97316,stroke:#333,stroke-width:1px;
+  class D1,D2,D3 service;
+  class D4,D5 infra;
 ```
 
 ---
