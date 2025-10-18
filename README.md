@@ -14,7 +14,7 @@
 %% System Architecture - Refined (GitHub-compatible)
 flowchart TB
   subgraph CLIENT[Client Layer]
-    A1[Next.js Web App <br/>React + TypeScript]
+    A1[Next.js Web App (SSR + SPA)<br/>React + TypeScript]
     A2[Mobile App<br/>React Native]
     A3[Electron Desktop]
   end
@@ -115,6 +115,7 @@ flowchart TB
   style D3 fill:#8b5cf6,stroke:#333,stroke-width:1px
   style D4 fill:#f97316,stroke:#333,stroke-width:1px
   style D5 fill:#f97316,stroke:#333,stroke-width:1px
+
 ```
 
 ---
