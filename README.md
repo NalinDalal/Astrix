@@ -51,7 +51,7 @@ flowchart TB
 
   subgraph CHAIN[Blockchain Layer]
     G1[Polygon / Arbitrum / Base]
-    G2[PlatformToken (ERC-20)]
+    G2[PlatformToken (ERC20)]
     G3[Game Contract (Escrow + Verify)]
     G4[Chainlink VRF]
   end
