@@ -1,0 +1,48 @@
+# .github/workflows/auto-merge.yml
+name: Auto Merge on Comment
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    if: |
+      github.event.issue.pull_request != null &&
+      (
+        contains(github.event.comment.body, '/lgtm') ||
+        contains(github.event.comment.body, '/merge') ||
+        contains(github.event.comment.body, '/merged') ||
+        contains(github.event.comment.body, '/mergeit') ||
+        contains(github.event.comment.body, '/merges')
+      )
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🔎 Check commenter permission
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: context.payload.comment.user.login
+            });
+            core.setOutput("permission", data.permission);
+
+      - name: ✅ Merge PR (only if CI passed)
+        if: |
+          steps.check.outputs.permission == 'write' ||
+          steps.check.outputs.permission == 'admin'
+        uses: peter-evans/merge-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request: ${{ github.event.issue.number }}
+          merge-method: squash
+          required-statuses: CI
+          delete-branch: true   # optional — automatically deletes branch after merge
