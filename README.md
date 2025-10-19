@@ -1,135 +1,186 @@
-# Turborepo starter
+# Gambling Website
 
-This Turborepo starter is maintained by the Turborepo core team.
+- **Project:** Build a complex gaming website for profit, similar to Stake
+- **Reference:** [Stake-plinko](https://stake.bet/casino/games/plinko?c=okbrvplink3Ind)
 
-## Using this example
+[Jargon/Simulation](https://github.com/NalinDalal/plinko-simulation)
 
-Run the following command:
+**Version:** Final
+**Last updated:** 2025-10-18
 
-```sh
-npx create-turbo@latest
+## 1) High-level Architecture (Mermaid)
+
+```mermaid
+%% System Architecture - Refined (GitHub-safe)
+flowchart TB
+  %% Client layer
+  subgraph CLIENT ["Client Layer"]
+    A1["Next.js Web App\nReact + TypeScript"]
+    A2["Mobile App\nReact Native"]
+    A3["Electron Desktop"]
+  end
+
+  %% Edge / CDN / WAF
+  subgraph EDGE ["Edge Layer - Cloudflare"]
+    B1["CDN - Static Assets"]
+    B2["WAF - DDoS / Bot Mitigation"]
+    B3["Rate Limit - Redis-backed"]
+  end
+
+  %% Gateway
+  subgraph GATEWAY ["Gateway Layer"]
+    C1["API Gateway - NGINX/Kong"]
+    C2["WebSocket Gateway - Socket.io Cluster"]
+  end
+
+  %% Services
+  subgraph SERVICES ["Service Layer - Node.js / TypeScript"]
+    D1["Auth Service\nJWT, Sessions, 2FA, KYC"]
+    D2["Game Service\nPlinko Engine, Deterministic Simulation"]
+    D3["Wallet Service\nBalance mgmt, Ledgers, Fiat/On-chain"]
+    D4["RNG Service\nSeed mgmt, HMAC + VRF verification"]
+    D5["Blockchain Service\nContract ops, TX watch, Chainlink VRF client"]
+    D6["Notification Service\nEmail/SMS/Push/Webhook"]
+  end
+
+  %% Message bus / workers
+  subgraph MQ ["Message Bus & Workers"]
+    E1["Kafka / Redis Streams"]
+    E2["Workers: Analytics, Settlements, Withdraws, KYC jobs"]
+  end
+
+  %% Data layer
+  subgraph DATA ["Data Layer"]
+    F1[(Postgres - Primary DB)]
+    F2[(Redis Cluster - Cache & Sessions)]
+    F3[(ClickHouse - Analytics)]
+    F4[(S3 - KYC, Logs)]
+  end
+
+  %% Blockchain
+  subgraph CHAIN ["Blockchain Layer"]
+    G1["Polygon / Arbitrum / Base"]
+    G2["Platform Token (ERC-20)"]
+    G3["Game Contract (Escrow + Verify)"]
+    G4["Chainlink VRF"]
+  end
+
+  %% Observability
+  subgraph OBS ["Monitoring"]
+    H1["Datadog / CloudWatch / Sentry"]
+  end
+
+  %% Connections
+  A1 --> B1
+  A2 --> B1
+  A3 --> B1
+  B1 --> B2
+  B2 --> B3
+
+  B3 --> C1
+  B3 --> C2
+
+  C1 --> D1
+  C1 --> D3
+  C1 --> D5
+  C2 --> D2
+  C2 --> D6
+
+  D2 --> D4
+  D2 --> D3
+  D3 --> D5
+  D5 --> G1
+  D4 --> G4
+
+  D2 --> E1
+  D3 --> E1
+  D5 --> E1
+  E1 --> E2
+  E2 --> F3
+
+  D1 --> F1
+  D2 --> F1
+  D3 --> F1
+  D1 --> F2
+  D2 --> F2
+  D3 --> F2
+  D2 --> F3
+  D1 --> F4
+
+  D1 -.-> H1
+  D2 -.-> H1
+  D3 -.-> H1
+  F1 -.-> H1
+
+  %% Styling (GitHub/VScode-friendly)
+  classDef service fill:#8b5cf6,stroke:#333,stroke-width:1px;
+  classDef infra fill:#f97316,stroke:#333,stroke-width:1px;
+  class D1,D2,D3 service;
+  class D4,D5 infra;
 ```
 
-## What's inside?
+---
 
-This Turborepo includes the following packages/apps:
+## 3) Key Design Decisions (short)
 
-### Apps and Packages
+- **Hybrid approach**: Fast game loop off-chain (Web2) + on-chain anchoring for fairness and optional on-chain bets.
+- **Provably fair**: Server publishes `serverSeedHash` prior to a betting session, signs `serverSeed` after outcome, client seed + server seed deterministic simulation. Optionally verify with Chainlink VRF when high-value bets requested.
+- **Wallet model**: Ledger-first — use a double-entry ledger in DB as source of truth; on-chain reconciled asynchronously.
+- **Scaling**: WebSocket gateway scale horizontally with sticky sessions (or token-based reconnection), Kafka for event-driven settlement, ClickHouse for analytics.
+- **Security**: KYC for withdrawals, rate-limits, hardware HSMs for key storage, signed proofs for seeds.
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+---
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+## 4) Minimal API & WebSocket Contracts (examples)
 
-### Utilities
+### REST — Auth
 
-This Turborepo has some additional tools already setup for you:
+`POST /api/v1/auth/login`
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+Request:
 
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+```json
+{ "email": "user@example.com", "password": "hunter2" }
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+Response 200:
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+```json
+{
+  "token": "eyJhbGci...",
+  "refreshToken": "...",
+  "user": { "id": "u_123", "username": "nalin" }
+}
 ```
 
-### Develop
+---
 
-To develop all apps and packages, run the following command:
+### REST — Wallet
 
-```
-cd my-turborepo
+`POST /api/v1/wallet/deposit-notify` (internal webhook from payment provider)
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev
+Request:
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
-
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
+```json
+{
+  "txId": "tx_abc",
+  "userId": "u_123",
+  "amount": 100000,
+  "currency": "USD",
+  "status": "confirmed"
+}
 ```
 
-### Remote Caching
+Response 200:
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+```json
+{ "ok": true }
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+---
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+### WebSocket — Game channel (events)
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
+Connect: `wss://api.example.com/ws?token=<JWT>`
 
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+Subscribe: `{"action":"subscribe"}`
