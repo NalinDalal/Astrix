@@ -15,9 +15,7 @@
 flowchart TB
   %% Client layer
   subgraph CLIENT ["Client Layer"]
-    A1["Next.js Web App\nReact + TypeScript"]
-    A2["Mobile App\nReact Native"]
-    A3["Electron Desktop"]
+    A1["React + TypeScript"]
   end
 
   %% Edge / CDN / WAF
@@ -35,12 +33,18 @@ flowchart TB
 
   %% Services
   subgraph SERVICES ["Service Layer - Node.js / TypeScript"]
-    D1["Auth Service\nJWT, Sessions, 2FA, KYC"]
-    D2["Game Service\nPlinko Engine, Deterministic Simulation"]
-    D3["Wallet Service\nBalance mgmt, Ledgers, Fiat/On-chain"]
-    D4["RNG Service\nSeed mgmt, HMAC + VRF verification"]
-    D5["Blockchain Service\nContract ops, TX watch, Chainlink VRF client"]
-    D6["Notification Service\nEmail/SMS/Push/Webhook"]
+    D1["Auth Service
+    JWT, Sessions, 2FA, KYC"]
+    D2["Game Service
+    Plinko Engine, Deterministic Simulation"]
+    D3["Wallet Service
+    Balance mgmt, Ledgers, Fiat/On-chain"]
+    D4["RNG Service
+    Seed mgmt, HMAC + VRF verification"]
+    D5["Blockchain Service
+    Contract ops, TX watch, Chainlink VRF client"]
+    D6["Notification Service
+    Email/SMS/Push/Webhook"]
   end
 
   %% Message bus / workers
@@ -59,21 +63,15 @@ flowchart TB
 
   %% Blockchain
   subgraph CHAIN ["Blockchain Layer"]
-    G1["Polygon / Arbitrum / Base"]
+    G1["Solana"]
     G2["Platform Token (ERC-20)"]
     G3["Game Contract (Escrow + Verify)"]
     G4["Chainlink VRF"]
   end
 
-  %% Observability
-  subgraph OBS ["Monitoring"]
-    H1["Datadog / CloudWatch / Sentry"]
-  end
 
   %% Connections
   A1 --> B1
-  A2 --> B1
-  A3 --> B1
   B1 --> B2
   B2 --> B3
 
@@ -107,10 +105,6 @@ flowchart TB
   D2 --> F3
   D1 --> F4
 
-  D1 -.-> H1
-  D2 -.-> H1
-  D3 -.-> H1
-  F1 -.-> H1
 
   %% Styling (GitHub/VScode-friendly)
   classDef service fill:#8b5cf6,stroke:#333,stroke-width:1px;
@@ -135,6 +129,20 @@ flowchart TB
 
 ### REST — Auth
 
+`POST /api/v1/auth/signup`
+
+Request:
+
+```json
+{ "email": "user@example.com", "password": "hunter2" }
+```
+
+Response 200:
+
+```json
+{ "message": "Welcome", "userId": "userId" }
+```
+
 `POST /api/v1/auth/login`
 
 Request:
@@ -153,34 +161,45 @@ Response 200:
 }
 ```
 
+refresh token is till the tab is on, as soon as tab is closed, the token gets revoked
+
 ---
 
 ### REST — Wallet
 
-`POST /api/v1/wallet/deposit-notify` (internal webhook from payment provider)
+`POST /api/v1/wallet/deposit-notify?gameId=<gameId>` (internal webhook from payment provider)
 
 Request:
 
 ```json
 {
+  "gameId": "gameId",
   "txId": "tx_abc",
   "userId": "u_123",
   "amount": 100000,
   "currency": "USD",
-  "status": "confirmed"
+  "status": "confirmed",
+  "message": "You have deposited $1000.00 "
 }
 ```
 
 Response 200:
 
 ```json
-{ "ok": true }
+{ "ok": true, "transaction ID": "txId" }
 ```
 
 ---
 
 ### WebSocket — Game channel (events)
 
-Connect: `wss://api.example.com/ws?token=<JWT>`
+Connect: `wss://api.example.com/ws?token=<JWT>&gameId=<gameId>`
 
-Subscribe: `{"action":"subscribe"}`
+Subscribe: `{"game_id":"gameId","action":"subscribe"}`
+
+then you do some singular player functions like, you throw a dart,
+it lands on some place, well we need to work on betting things too
+
+---
+
+dockerised the app, start impementing db

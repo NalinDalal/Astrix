@@ -1,0 +1,107 @@
+version: "3.9"
+
+services:
+  # ----------- Infra -----------
+  postgres:
+    image: postgres:16-alpine
+    container_name: monorepo-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: coredb
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: monorepo-redis
+    ports:
+      - "6379:6379"
+
+  kafka:
+    image: bitnami/kafka:3.8
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+
+  zookeeper:
+    image: bitnami/zookeeper:3.9
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+  # ----------- Services -----------
+  auth:
+    build:
+      context: .
+      dockerfile: packages/auth/Dockerfile
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://admin:admin@postgres:5432/coredb
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - ./packages/auth:/app/packages/auth
+      - /app/node_modules
+    ports:
+      - "4001:4000"
+    depends_on:
+      - postgres
+      - redis
+
+  wallet:
+    build:
+      context: .
+      dockerfile: packages/wallet/Dockerfile
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://admin:admin@postgres:5432/coredb
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - ./packages/wallet:/app/packages/wallet
+      - /app/node_modules
+    ports:
+      - "4002:4000"
+    depends_on:
+      - postgres
+      - redis
+
+  game:
+    build:
+      context: .
+      dockerfile: packages/game/Dockerfile
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://admin:admin@postgres:5432/coredb
+      REDIS_URL: redis://redis:6379
+    volumes:
+      - ./packages/game:/app/packages/game
+      - /app/node_modules
+    ports:
+      - "4003:4000"
+    depends_on:
+      - wallet
+      - redis
+
+  web:
+    build:
+      context: .
+      dockerfile: packages/web/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - API_URL=http://localhost:4001
+    volumes:
+      - ./packages/web:/app/packages/web
+      - /app/node_modules
+
+volumes:
+  pg_data:
+

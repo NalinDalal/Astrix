@@ -1,0 +1,26 @@
+# syntax=docker/dockerfile:1.5
+
+ARG SERVICE
+FROM node:20-alpine AS deps
+WORKDIR /app
+RUN npm install -g pnpm@9
+
+# Copy workspace manifests for deterministic install
+COPY package.json pnpm-lock.yaml ./
+COPY packages/${SERVICE}/package.json packages/${SERVICE}/package.json
+
+RUN pnpm install --frozen-lockfile
+
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN pnpm -r build
+
+FROM node:20-alpine AS release
+WORKDIR /app
+COPY --from=builder /app/packages/${SERVICE}/dist ./dist
+COPY --from=deps /app/node_modules ./node_modules
+ENV NODE_ENV=production
+EXPOSE 4000
+CMD ["node", "dist/index.js"]
+
