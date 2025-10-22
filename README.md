@@ -387,3 +387,8 @@ First digit ki - 5% only
 - Dockerized + ready for monorepo deployment
 - REST APIs easily upgradeable to WebSocket for real-time play
 - Scalable, isolated services: ready for microservice separation
+
+---
+
+to run:
+`docker compose up -d`
