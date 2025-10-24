@@ -9,3 +9,5 @@ for db:
  -d postgres:15
 
 put up a .env file in /packages/prisma then run migrations
+bunx prisma migrate dev
+bun run seed.ts #to seed with dummy data

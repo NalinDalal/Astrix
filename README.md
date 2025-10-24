@@ -392,3 +392,8 @@ First digit ki - 5% only
 
 to run:
 `docker compose up -d`
+
+to generate and migrate prisma client, do this:
+
+1. go to /packages/prisma, copy over .env.example to .env
+   then run : ` bunx prisma migrate dev` and `bun run seed.ts` to migrate and seed db
