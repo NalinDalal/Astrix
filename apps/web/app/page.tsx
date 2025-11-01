@@ -86,7 +86,10 @@ export default function Home() {
           </p>
 
           <div className="flex flex-wrap gap-4 justify-center pt-4">
-            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all duration-300">
+            <Button
+              appName="Astrix"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all duration-300"
+            >
               🎲 Try Your Luck
             </Button>
             <a
@@ -195,11 +198,14 @@ export default function Home() {
             Start your journey into the world of probability and chance
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all duration-300">
+            <Button
+              appName="Astrix"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all duration-300"
+            >
               Get Started Now
             </Button>
             <a
-              href="https://github.com/yourusername/astrix"
+              href="https://github.com/nalindalal/astrix"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-gray-900 dark:bg-gray-800 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-black dark:hover:bg-gray-700 transition-all duration-300 hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
@@ -217,7 +223,7 @@ export default function Home() {
             <div>
               <h3 className="text-xl font-bold mb-2">Astrix</h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Educational gaming simulation platform
+                Gambling simulation platform
               </p>
             </div>
             <div>
