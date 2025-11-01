@@ -247,7 +247,7 @@ export default function Home() {
                 </li>
                 <li>
                   <a
-                    href="https://github.com/yourusername/astrix"
+                    href="https://github.com/nalindalal/astrix"
                     className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
                   >
                     GitHub

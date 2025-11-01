@@ -9,6 +9,7 @@
     "check-types": "turbo run check-types"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.16",
     "prettier": "^3.6.2",
     "prisma": "^6.18.0",
     "turbo": "^2.6.0",
